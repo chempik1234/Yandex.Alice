@@ -7,6 +7,21 @@ app = Flask(__name__)
 
 logging.basicConfig(level=logging.INFO)
 
+buttons = [
+    {
+        'title': 'Да',
+        'hide': True
+    },
+    {
+        'title': 'Нет',
+        'hide': True
+    },
+    {
+        'title': 'Помощь',
+        'hide': True
+    }
+]
+
 cities = {
     'москва': ['1030494/d2d6570d6ef21c0f41ae',
                '1533899/6c27c04bb10577f1ec58'],
@@ -63,6 +78,10 @@ def handle_dialog(res, req):
                 {
                     'title': 'Нет',
                     'hide': True
+                },
+                {
+                    'title': 'Помощь',
+                    'hide': True
                 }
             ]
     else:
@@ -88,18 +107,13 @@ def handle_dialog(res, req):
             elif 'нет' in req['request']['nlu']['tokens']:
                 res['response']['text'] = 'Ну и ладно!'
                 res['end_session'] = True
+            elif 'помощь' in req['request']['nlu']['tokens']:
+                res['response']['text'] = 'Всё просто. Я говорю город, а Вы угадываете. Кнопка "Да" - продолжить,' \
+                                          '"Нет" - выйти'
+                res['response']['buttons'] = buttons
             else:
                 res['response']['text'] = 'Не поняла ответа! Так да или нет?'
-                res['response']['buttons'] = [
-                    {
-                        'title': 'Да',
-                        'hide': True
-                    },
-                    {
-                        'title': 'Нет',
-                        'hide': True
-                    }
-                ]
+                res['response']['buttons'] = buttons
         else:
             play_game(res, req)
 
