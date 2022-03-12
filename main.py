@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.INFO)
 # Когда он откажется купить слона,
 # то мы уберем одну подсказку.
 sessionStorage = {}
+flag, start = False, True
 
 
 @app.route('/post', methods=['POST'])  # POST для использования json внутри handle_dialog
@@ -42,9 +43,14 @@ def main():
 
 
 def handle_dialog(req, res):
+    global flag, start
+    if flag:
+        animal = 'кролика'
+    else:
+        animal = 'слона'
     user_id = req['session']['user_id']
 
-    if req['session']['new']:  # если только зашел то начало игры
+    if req['session']['new'] or start:  # если только зашел то начало игры
         sessionStorage[user_id] = {
             'suggests': [
                 "Не хочу.",
@@ -52,22 +58,28 @@ def handle_dialog(req, res):
                 "Отстань!",
             ]
         }
-        res['response']['text'] = 'Привет! Купи слона!'
-        res['response']['buttons'] = get_suggests(user_id)
+        start = False
+        res['response']['text'] = f'Привет! Купи {animal}!'
+        res['response']['buttons'] = get_suggests(user_id, animal[: -1])
         return
     # Если он написал 'ладно', 'куплю', 'покупаю', 'хорошо',
     # то мы считаем, что пользователь согласился.
-    okreq = ['ладно', 'куплю', 'покупаю', 'хорошо', 'я покупаю', 'я куплю']
-    if req['request']['original_utterance'].lower().replace(' ', '') in okreq:
-        res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!'
-        res['response']['end_session'] = True
+    okreq = ['ладно', 'куплю', 'покупаю', 'хорошо', 'япокупаю', 'якуплю']
+    if req['request']['original_utterance'].lower().strip().replace(' ', '') in okreq:
+        res['response']['text'] = f'{animal[0].upper() + animal[1:]} можно найти на Яндекс.Маркете!'
+        start = True
+        if not flag:
+            flag = True
+        else:
+            flag = False
+            res['response']['end_session'] = True
         return
     res['response']['text'] = \
-        f"Все говорят '{req['request']['original_utterance']}', а ты купи слона!"
-    res['response']['buttons'] = get_suggests(user_id)
+        f"Все говорят '{req['request']['original_utterance']}', а ты купи {animal}!"
+    res['response']['buttons'] = get_suggests(user_id, animal[: -1])
 
 
-def get_suggests(user_id):  # обычно даёт 2 подсказки из списка,
+def get_suggests(user_id, animal):  # обычно даёт 2 подсказки из списка,
     session = sessionStorage[user_id]  # а когда они кончаются, яндекс маркет
 
     suggests = [
@@ -80,7 +92,7 @@ def get_suggests(user_id):  # обычно даёт 2 подсказки из с
     if len(suggests) < 2:
         suggests.append({
             "title": "Ладно",
-            "url": "https://market.yandex.ru/search?text=слон",
+            "url": f"https://market.yandex.ru/search?text={animal}",
             "hide": True
         })
     return suggests
