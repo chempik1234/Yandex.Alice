@@ -1,8 +1,10 @@
 from flask import Flask, request
+from flask_ngrok import run_with_ngrok
 import logging
 import json
 # мы передаём __name__, внутри лога это 'logging
 app = Flask(__name__)
+run_with_ngrok(app)
 
 logging.basicConfig(level=logging.INFO)
 
