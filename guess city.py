@@ -145,6 +145,14 @@ def play_game(res, req):
             res['response']['text'] = 'Правильно! Сыграем ещё?'
             sessionStorage[user_id]['guessed_cities'].append(city)
             sessionStorage[user_id]['game_started'] = False
+            btn_city = [
+                {
+                    'title': 'Покажи город на карте',
+                    'url': 'https://yandex.ru/maps/?mode=search&text=' + city.title(),
+                    'hide': True
+                }
+            ]
+            res['response']['buttons'] = buttons + btn_city
             return
         else:
             # если нет
@@ -156,6 +164,14 @@ def play_game(res, req):
                 res['response']['text'] = f'Вы пытались. Это {city.title()}. Сыграем ещё?'
                 sessionStorage[user_id]['game_started'] = False
                 sessionStorage[user_id]['guessed_cities'].append(city)
+                btn_city = [
+                    {
+                        'title': 'Покажи город на карте',
+                        'url': 'https://yandex.ru/maps/?mode=search&text=' + city.title(),
+                        'hide': True
+                    }
+                ]
+                res['response']['buttons'] = buttons + btn_city
                 return
             else:
                 # иначе показываем следующую картинку
